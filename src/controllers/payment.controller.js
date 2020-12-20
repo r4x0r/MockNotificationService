@@ -25,7 +25,7 @@ const sendToCustomer = catchAsync(async (req, res) => {
   try {
     await fetchRetry({
       method: 'POST',
-      url: 'https://testapi2.free.beeceptor.com/test-408',
+      url: callback_url,
       data: reqBody
     })
 
