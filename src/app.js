@@ -8,11 +8,19 @@ const passport = require('passport');
 const httpStatus = require('http-status');
 const config = require('./config/config');
 const morgan = require('./config/morgan');
-const { jwtStrategy } = require('./config/passport');
-const { authLimiter } = require('./middlewares/rateLimiter');
+const {
+  jwtStrategy
+} = require('./config/passport');
+const {
+  authLimiter
+} = require('./middlewares/rateLimiter');
 const routes = require('./routes/v1');
-const { errorConverter, errorHandler } = require('./middlewares/error');
+const {
+  errorConverter,
+  errorHandler
+} = require('./middlewares/error');
 const ApiError = require('./utils/ApiError');
+const BasicStrategy = require('passport-http').BasicStrategy;
 
 const app = express();
 
@@ -28,7 +36,9 @@ app.use(helmet());
 app.use(express.json());
 
 // parse urlencoded request body
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({
+  extended: true
+}));
 
 // sanitize request data
 app.use(xss());
@@ -43,7 +53,27 @@ app.options('*', cors());
 
 // jwt authentication
 app.use(passport.initialize());
-passport.use('jwt', jwtStrategy);
+// passport.use('jwt', jwtStrategy);
+
+passport.use(new BasicStrategy(
+  function (username, password, done) {
+    console.log('in passport')
+    console.log({
+      username,
+      password,
+      done
+    })
+    if (username) {
+      done(null, {
+        user: username
+      });
+    } else {
+      return done(null, false, {
+        message: 'api-key is missing'
+      });
+    }
+  }
+));
 
 // limit repeated failed requests to auth endpoints
 if (config.env === 'production') {
